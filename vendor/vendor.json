@@ -1,0 +1,11 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"path": "github.com/aodin/config",
+			"revision": "8fff5ae1d5a7513f36e0f47da9dfc1428acf1367",
+			"revisionTime": "2016-03-15T21:48:57-06:00"
+		}
+	]
+}
