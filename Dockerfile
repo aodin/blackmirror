@@ -11,5 +11,9 @@ RUN go install github.com/aodin/blackstar
 # Run the outyet command by default when the container starts.
 ENTRYPOINT /go/bin/blackstar
 
-# Document that the service listens on port 8081.
-EXPOSE 8081
+# Document that the service listens on port 8080.
+EXPOSE 8080
+
+# Or use onbuild
+# FROM golang:onbuild
+# EXPOSE 8080
