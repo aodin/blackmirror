@@ -11,12 +11,18 @@ import (
 	"gopkg.in/urfave/cli.v2" // imports as "cli"
 )
 
+var version string // Set by build, e.g. -ldflags "-X main.version=0.0.1"
 var conf config.Config
 
 func main() {
+	conf.Version = version // TODO Any way to set nested ldflags?
 	app := cli.NewApp()
 	app.Name = "blackstar"
 	app.Usage = "reflect HTTP requests back as a response"
+	if app.Version = conf.Version; app.Version == "" {
+		conf.Version = "unversioned"
+		app.Version = conf.Version
+	}
 	app.Flags = []cli.Flag{
 		cli.IntFlag{
 			Name:    "port, p",
@@ -39,7 +45,7 @@ func server(ctx *cli.Context) error {
 	conf.Port = ctx.Int("port")
 	conf.Domain = ctx.String("host")
 	http.HandleFunc("/", dump)
-	log.Printf("blackstar: starting on %s", conf.Address())
+	log.Printf("blackstar (%s): starting on %s", conf.Version, conf.Address())
 	if err := http.ListenAndServe(conf.Address(), nil); err != nil {
 		log.Fatal(err)
 		return err
@@ -48,12 +54,16 @@ func server(ctx *cli.Context) error {
 }
 
 func dump(w http.ResponseWriter, r *http.Request) {
-	log.Printf("blackstar: %s %s", r.Method, r.URL.Path)
+	// Add the version to the log and response
+	log.Printf("blackstar (%s): %s %s", conf.Version, r.Method, r.URL.Path)
+
 	dump, err := httputil.DumpRequest(r, true)
 	if err != nil {
 		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
 		return
 	}
+
+	w.Header().Set("X-Blackstar-Version", conf.Version)
 	w.Header().Set("Content-Type", "text/plain")
 	fmt.Fprintf(w, "%s", dump)
 	return
