@@ -6,6 +6,13 @@
 			"path": "github.com/aodin/config",
 			"revision": "8fff5ae1d5a7513f36e0f47da9dfc1428acf1367",
 			"revisionTime": "2016-03-15T21:48:57-06:00"
+		},
+		{
+			"checksumSHA1": "Do8/bmD61wTFyXUec0G2/e1alOI=",
+			"path": "gopkg.in/urfave/cli.v2",
+			"revision": "9d93484b372e388f4c23692da5912af65c0074ae",
+			"revisionTime": "2016-05-25T13:32:33Z"
 		}
-	]
+	],
+	"rootPath": "github.com/aodin/blackstar"
 }

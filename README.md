@@ -22,7 +22,7 @@ Response:
 
 It accepts `PORT` / `HOST` environment variables and `-port` / `-host` flags, with the flags taking precendence. Its default address is `:8080`.
 
-    PORT=8081 HOST=0.0.0.0 go run blackstar.go --port=8082 -host="localhost"
+    PORT=8081 HOST=0.0.0.0 go run blackstar.go -port=8082 -host="localhost"
 
 Blackstar purposefully uses the `/vendor` directory to test Go 1.5+ vendoring.
 

@@ -1,41 +1,50 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"os"
-	"strconv"
 
 	"github.com/aodin/config"
+	"gopkg.in/urfave/cli.v2" // imports as "cli"
 )
 
-var conf = config.Config{}
-
-var (
-	DefaultPort = 8080
-	DefaultHost = ""
-)
-
-func init() {
-	if port, _ := strconv.Atoi(os.Getenv("PORT")); port > 0 {
-		DefaultPort = port
-	}
-	if host := os.Getenv("HOST"); host != "" {
-		DefaultHost = host
-	}
-
-	flag.IntVar(&conf.Port, "port", DefaultPort, "port for service")
-	flag.StringVar(&conf.Domain, "host", DefaultHost, "host for service")
-	flag.Parse()
-}
+var conf config.Config
 
 func main() {
+	app := cli.NewApp()
+	app.Name = "blackstar"
+	app.Usage = "reflect HTTP requests back as a response"
+	app.Flags = []cli.Flag{
+		cli.IntFlag{
+			Name:    "port, p",
+			Value:   8080,
+			Usage:   "server port",
+			EnvVars: []string{"PORT"},
+		},
+		cli.StringFlag{
+			Name:    "host, h",
+			Value:   "",
+			Usage:   "server host",
+			EnvVars: []string{"HOST"},
+		},
+	}
+	app.Action = server
+	app.Run(os.Args)
+}
+
+func server(ctx *cli.Context) error {
+	conf.Port = ctx.Int("port")
+	conf.Domain = ctx.String("host")
 	http.HandleFunc("/", dump)
 	log.Printf("blackstar: starting on %s", conf.Address())
-	log.Fatal(http.ListenAndServe(conf.Address(), nil))
+	if err := http.ListenAndServe(conf.Address(), nil); err != nil {
+		log.Fatal(err)
+		return err
+	}
+	return nil
 }
 
 func dump(w http.ResponseWriter, r *http.Request) {
