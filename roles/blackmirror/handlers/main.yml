@@ -1,0 +1,15 @@
+---
+- name: restart nginx
+  service: name=nginx state=restarted
+
+- name: restart service
+  service: name={{ name }} state=restarted
+
+- name: reload init
+  command: initctl reload-configuration
+  notify: restart service
+
+- name: check init syntax
+  become: no
+  command: init-checkconf /etc/init/{{ name }}.conf
+  notify: reload init

@@ -1,0 +1,7 @@
+---
+go_path: "{{ home_dir }}/go"
+go_bin: "{{ go_path }}/bin"
+go_install: "/usr/local"
+go_target: "1.6.2"
+go_tarball: "go{{ go_target }}.linux-amd64.tar.gz"
+go_version_target: "go version go{{ go_target }} linux/amd64"

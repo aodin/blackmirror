@@ -1,6 +1,7 @@
 gin-bin
-blackmirror
+/blackmirror
 bin
 playbook.retry
+site.retry
 /logs
 .DS_Store

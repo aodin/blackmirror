@@ -1,0 +1,4 @@
+---
+name: "blackmirror"
+project: "github.com/aodin/{{ name }}"
+port: 8080
