@@ -1,3 +1,6 @@
 gin-bin
-blackstar
+blackmirror
 bin
+playbook.retry
+/logs
+.DS_Store

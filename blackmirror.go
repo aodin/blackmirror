@@ -17,7 +17,7 @@ var conf config.Config
 func main() {
 	conf.Version = version // TODO Any way to set nested ldflags?
 	app := cli.NewApp()
-	app.Name = "blackstar"
+	app.Name = "blackmirror"
 	app.Usage = "reflect HTTP requests back as a response"
 	if app.Version = conf.Version; app.Version == "" {
 		conf.Version = "unversioned"
@@ -45,7 +45,7 @@ func server(ctx *cli.Context) error {
 	conf.Port = ctx.Int("port")
 	conf.Domain = ctx.String("host")
 	http.HandleFunc("/", dump)
-	log.Printf("blackstar (%s): starting on %s", conf.Version, conf.Address())
+	log.Printf("blackmirror (%s): starting on %s", conf.Version, conf.Address())
 	if err := http.ListenAndServe(conf.Address(), nil); err != nil {
 		log.Fatal(err)
 		return err
@@ -55,7 +55,7 @@ func server(ctx *cli.Context) error {
 
 func dump(w http.ResponseWriter, r *http.Request) {
 	// Add the version to the log and response
-	log.Printf("blackstar (%s): %s %s", conf.Version, r.Method, r.URL.Path)
+	log.Printf("blackmirror (%s): %s %s", conf.Version, r.Method, r.URL.Path)
 
 	dump, err := httputil.DumpRequest(r, true)
 	if err != nil {
@@ -63,7 +63,7 @@ func dump(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("X-Blackstar-Version", conf.Version)
+	w.Header().Set("X-Blackmirror-Version", conf.Version)
 	w.Header().Set("Content-Type", "text/plain")
 	fmt.Fprintf(w, "%s", dump)
 	return

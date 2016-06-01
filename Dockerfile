@@ -3,13 +3,13 @@
 FROM golang
 
 # Copy the local package files to the container's workspace.
-ADD . /go/src/github.com/aodin/blackstar
+ADD . /go/src/github.com/aodin/blackmirror
 
 # Build the command inside the container.
-RUN go install github.com/aodin/blackstar
+RUN go install github.com/aodin/blackmirror
 
 # Run the outyet command by default when the container starts.
-ENTRYPOINT /go/bin/blackstar
+ENTRYPOINT /go/bin/blackmirror
 
 # Document that the service listens on port 8080.
 EXPOSE 8080
