@@ -1,8 +1,26 @@
 # Black Mirror
 
-A small Go program for testing deployments.
+A small Go server for testing deployments. Its Docker image is less than 14 MB.
 
-Black Mirror will respond to a request for any method and path with the HTTP/1.1 wire format as a text/plain document.
+### Install
+
+A Docker image is available on [Docker Hub](https://hub.docker.com/r/aodin/blackmirror/).
+
+    docker pull aodin/blackmirror
+    docker run -p 8080:8080 aodin/blackmirror
+
+It was built and tagged with:
+
+    docker build . -t aodin/blackmirror
+
+The server can be built locally with [go](https://golang.org/):
+
+    go build .
+
+
+### Usage
+
+The server will respond to a request for any method and path with the HTTP/1.1 wire format as a text/plain document.
 
 Request:
 
@@ -24,8 +42,8 @@ It accepts `PORT` / `HOST` environment variables and `-port` / `-host` flags, wi
 
     PORT=8081 HOST=0.0.0.0 go run blackmirror.go -port=8082 -host="localhost"
 
-Black Mirror purposefully uses the `/vendor` directory to test Go 1.5+ vendoring.
+The server purposefully uses the `/vendor` directory to test Go 1.5+ vendoring.
 
 Happy hacking!
 
-aodin, 2016
+aodin, 2018

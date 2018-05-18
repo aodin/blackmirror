@@ -6,24 +6,19 @@ import (
 	"log"
 	"net/http"
 	"net/http/httputil"
-	_ "net/http/pprof"
 	"os"
 	"os/signal"
+	"syscall"
 
 	"github.com/aodin/config"
-	"gopkg.in/urfave/cli.v2" // imports as "cli"
+	cli "gopkg.in/urfave/cli.v2"
 )
 
 var version string // Set by build, e.g. -ldflags "-X main.version=0.0.1"
 var conf config.Config
 
 func main() {
-	// Profiling
-	go func() {
-		log.Println(http.ListenAndServe("localhost:6060", nil))
-	}()
-
-	conf.Version = version // TODO Any way to set nested ldflags?
+	conf.Version = version
 	app := cli.NewApp()
 	app.Name = "blackmirror"
 	app.Usage = "reflect HTTP requests back as a response"
@@ -50,15 +45,18 @@ func main() {
 }
 
 func server(ctx *cli.Context) error {
+	// The server will gracefully exit on any interrupt or SIGTERM
 	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
 	conf.Port = ctx.Int("port")
 	conf.Domain = ctx.String("host")
-	http.HandleFunc("/", dump)
 
-	// Since Handler is nil it will use DefaultServeMux
-	srv := &http.Server{Addr: conf.Address()}
+	// Serve the dump handler on all paths
+	srv := &http.Server{
+		Addr:    conf.Address(),
+		Handler: http.HandlerFunc(dump),
+	}
 
 	go func() {
 		log.Printf(
@@ -73,7 +71,6 @@ func server(ctx *cli.Context) error {
 
 	log.Printf("blackmirror (%s): shutting down", conf.Version)
 	srv.Shutdown(context.Background())
-
 	return nil
 }
 
@@ -90,5 +87,4 @@ func dump(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Blackmirror-Version", conf.Version)
 	w.Header().Set("Content-Type", "text/plain")
 	fmt.Fprintf(w, "%s", dump)
-	return
 }
