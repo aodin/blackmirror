@@ -60,9 +60,18 @@ func (c Config) URL() (u *url.URL) {
 	return
 }
 
-// FullAddress returns the scheme, domain, port, and host
+// FullAddress returns the scheme, domain, port, and host - including
+// proxy info
 func (c Config) FullAddress() string {
 	return c.URL().String()
+}
+
+// StaticAddress adds the static URL to the full address
+// TODO If staticURL is already a valid URL just return that
+func (c Config) StaticAddress() string {
+	url := c.URL()
+	url.Path = c.StaticURL
+	return url.String()
 }
 
 // Parse will create a Config using the file settings.json in the

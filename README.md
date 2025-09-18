@@ -1,6 +1,6 @@
 # Black Mirror
 
-A small Go server for testing deployments. Its Docker image is less than 14 MB.
+A small Go server that reflects request headers, useful for testing deployments.
 
 ### Install
 
@@ -9,13 +9,18 @@ A Docker image is available on [Docker Hub](https://hub.docker.com/r/aodin/black
     docker pull aodin/blackmirror
     docker run -p 8080:8080 aodin/blackmirror
 
-It was built and tagged with:
+It was built for multi-arch and tagged with:
 
-    docker build . -t aodin/blackmirror
+    docker buildx create --use --name multi || true
+    docker buildx inspect --bootstrap
+    docker buildx build \
+        --platform linux/amd64,linux/arm64 \
+        -t aodin/blackmirror:latest \
+        --push .
 
 The server can be built locally with [go](https://golang.org/):
 
-    go build .
+    go build -mod=vendor .
 
 
 ### Usage
@@ -30,20 +35,21 @@ Response:
 
     GET /yo HTTP/1.1
     Host: localhost:8080
-    Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
-    Accept-Encoding: gzip, deflate, sdch
-    Accept-Language: en-US,en;q=0.8
-    Cache-Control: max-age=0
+    Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+    Accept-Encoding: gzip, deflate
+    Accept-Language: en-US,en;q=0.9
     Connection: keep-alive
+    Priority: u=0, i
+    Sec-Fetch-Dest: document
+    Sec-Fetch-Mode: navigate
+    Sec-Fetch-Site: none
     Upgrade-Insecure-Requests: 1
-    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36
+    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Safari/605.1.15
 
 It accepts `PORT` / `HOST` environment variables and `-port` / `-host` flags, with the flags taking precendence. Its default address is `:8080`.
 
     PORT=8081 HOST=0.0.0.0 go run blackmirror.go -port=8082 -host="localhost"
 
-The server purposefully uses the `/vendor` directory to test Go 1.5+ vendoring.
-
 Happy hacking!
 
-aodin, 2018
+aodin, 2025

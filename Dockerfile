@@ -1,32 +1,26 @@
-# Start from an Alpine Linux image with the latest version of Go installed
-# and a workspace (GOPATH) configured at /go.
-FROM golang:1.10-alpine3.7 AS build
+# syntax=docker/dockerfile:1
 
-# Copy the local package files to the container's workspace.
-COPY . /go/src/github.com/aodin/blackmirror
+# Build
+FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS build
+WORKDIR /src
+RUN apk add --no-cache build-base
 
-# Build the command inside the container. Since we're using Alpine Linux
-# to both build and run, we can keep CGO enabled.
-# Note that Alpine Linux uses the musl C library (https://www.musl-libc.org/)
-# and not the GNU C Library used by most other Linux distros.
-RUN go install github.com/aodin/blackmirror
+ENV CGO_ENABLED=0
+ENV GOFLAGS=-mod=vendor
 
-# The default Alpine Linux images is about 4 MB.
-FROM alpine:3.7 AS run
-LABEL description="https://github.com/aodin/blackmirror"
+COPY go.mod go.sum ./
+COPY vendor/ ./vendor/
+COPY . .
 
-# Alpine does not ship with root CA certificates. We'll install them using
-# the --no-cache flag, since the image's package index may be stale.
+ARG TARGETOS TARGETARCH
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    GOOS=$TARGETOS GOARCH=$TARGETARCH \
+    go build -trimpath -ldflags="-s -w" -o /out/blackmirror .
+
+# Runtime
+FROM alpine:3.22
 RUN apk add --no-cache ca-certificates
-
-# Copy the binary from the build stage.
-COPY --from=build /go/bin/blackmirror .
-
-# Run the command by default when the container starts.
-# Using exec format runs the Go server at PID 1, allowing "docker stop"
-# SIGTERM to gracefully stop the Go server.
-ENTRYPOINT ["./blackmirror"]
-
-# Blackmirror's default port is 8080, be can be overridden with either
-# The PORT env var or -port flag
+WORKDIR /app
+COPY --from=build /out/blackmirror /app/blackmirror
 EXPOSE 8080
+ENTRYPOINT ["/app/blackmirror"]

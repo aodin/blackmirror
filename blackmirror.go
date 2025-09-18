@@ -11,7 +11,7 @@ import (
 	"syscall"
 
 	"github.com/aodin/config"
-	cli "gopkg.in/urfave/cli.v2"
+	"github.com/urfave/cli/v3"
 )
 
 var version string // Set by build, e.g. -ldflags "-X main.version=0.0.1"
@@ -19,38 +19,47 @@ var conf config.Config
 
 func main() {
 	conf.Version = version
-	app := cli.NewApp()
-	app.Name = "blackmirror"
-	app.Usage = "reflect HTTP requests back as a response"
+
+	app := &cli.Command{
+		Name:  "blackmirror",
+		Usage: "reflect HTTP requests back as a response",
+	}
+
+	// Set version
 	if app.Version = conf.Version; app.Version == "" {
 		conf.Version = "unversioned"
 		app.Version = conf.Version
 	}
+
 	app.Flags = []cli.Flag{
-		cli.IntFlag{
+		&cli.IntFlag{
 			Name:    "port, p",
 			Value:   8080,
 			Usage:   "server port",
-			EnvVars: []string{"PORT"},
+			Sources: cli.EnvVars("PORT"),
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:    "host, h",
 			Value:   "",
 			Usage:   "server host",
-			EnvVars: []string{"HOST"},
+			Sources: cli.EnvVars("HOST"),
 		},
 	}
+
 	app.Action = server
-	app.Run(os.Args)
+
+	if err := app.Run(context.Background(), os.Args); err != nil {
+		log.Fatal(err)
+	}
 }
 
-func server(ctx *cli.Context) error {
+func server(ctx context.Context, cmd *cli.Command) error {
 	// The server will gracefully exit on any interrupt or SIGTERM
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
-	conf.Port = ctx.Int("port")
-	conf.Domain = ctx.String("host")
+	conf.Port = cmd.Int("port")
+	conf.Domain = cmd.String("host")
 
 	// Serve the dump handler on all paths
 	srv := &http.Server{

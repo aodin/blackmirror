@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -77,5 +78,36 @@ func ParseDatabasePath(path string) (c Database, err error) {
 		return
 	}
 	err = json.NewDecoder(f).Decode(&c)
+	return
+}
+
+// ParseDatabaseURL will create a Database from the given raw URL
+func ParseDatabaseURL(rawurl string) (db Database, err error) {
+	var parsed *url.URL
+	parsed, err = url.Parse(rawurl)
+	if err != nil {
+		return
+	}
+
+	// Remove the forward slashes
+	db.Name = strings.Trim(parsed.Path, "/")
+
+	db.Driver = parsed.Scheme
+	if parsed.User != nil {
+		db.User = parsed.User.Username()
+		db.Password, _ = parsed.User.Password()
+	}
+
+	// Split the port from the host
+	parts := strings.SplitN(parsed.Host, ":", 2)
+	if len(parts) < 2 {
+		db.Host = parsed.Host
+	} else {
+		db.Host = parts[0]
+		if db.Port, err = strconv.ParseInt(parts[1], 10, 64); err != nil {
+			return
+		}
+	}
+	db.SSLMode = parsed.Query().Get("sslmode")
 	return
 }

@@ -1,9 +1,0 @@
----
-- hosts: all
-  remote_user: ubuntu
-  become: yes
-  vars:
-    home_dir: "/home/ubuntu" # http://stackoverflow.com/a/33343455
-  roles:
-    - { role: golang }
-    - { role: blackmirror }
