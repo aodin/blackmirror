@@ -13,9 +13,12 @@ COPY vendor/ ./vendor/
 COPY . .
 
 ARG TARGETOS TARGETARCH
+ARG VERSION=dev
 RUN --mount=type=cache,target=/root/.cache/go-build \
     GOOS=$TARGETOS GOARCH=$TARGETARCH \
-    go build -trimpath -ldflags="-s -w" -o /out/blackmirror .
+    go build -trimpath \
+        -ldflags="-s -w -X main.version=$VERSION" \
+        -o /out/blackmirror .
 
 # Runtime
 FROM alpine:3.22

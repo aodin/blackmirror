@@ -27,7 +27,7 @@ func main() {
 
 	// Set version
 	if app.Version = conf.Version; app.Version == "" {
-		conf.Version = "unversioned"
+		conf.Version = "dev"
 		app.Version = conf.Version
 	}
 

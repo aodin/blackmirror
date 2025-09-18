@@ -13,8 +13,11 @@ It was built for multi-arch and tagged with:
 
     docker buildx create --use --name multi || true
     docker buildx inspect --bootstrap
+    VERSION=$(git describe --tags --always)
     docker buildx build \
         --platform linux/amd64,linux/arm64 \
+        --build-arg VERSION=$VERSION \
+        -t aodin/blackmirror:$VERSION \
         -t aodin/blackmirror:latest \
         --push .
 
